@@ -11,7 +11,7 @@
   <!-- Header avec navigation spécifique au dashboard -->
 <header>
     <nav class="navbar">
-      <a href="/index.html" class="logo">
+      <a href="/src/view/index.html" class="logo">
         <img src="/assets/e-Wallet6.gif" alt="Logo E-Wallet">
       </a>
       <ul class="nav-links">
@@ -63,15 +63,13 @@
       </aside>
 
       <!-- Main Content Area -->
-      <div class="dashboard-content">
-        
+      <div class="dashboard-content">        
         <!-- Vue d'ensemble (Overview) -->
         <section id="overview" class="dashboard-section active">
           <div class="section-header">
             <h2>Bonjour, <span id="greetingName"> ? </span> !</h2>
             <p class="date-display" id="currentDate"></p>
           </div>
-
           <!-- Cartes de résumé -->
           <div class="summary-cards">
             <div class="summary-card">
@@ -145,7 +143,6 @@
             </div>
           </div>
         </section>
-
         <!-- Section Cartes -->
         <section id="cards" class="dashboard-section">
           <div class="section-header">
@@ -178,7 +175,6 @@
             </div>
           </div>
         </section>
-
 <div>
         <!-- Section Transferts (masquée par défaut) -->
 <section id="transfer-section" class="transfer-section hidden">
@@ -253,7 +249,6 @@
   <footer>
     <p>&copy; 2026 E-Wallet. Tous droits réservés.</p>
   </footer>
-
-  <script type="module" src="/src/controllers/dashboard.js"></script>
+  <script type="module" src="/src/Controllers/dashboard.js"></script>
 </body>
 </html>

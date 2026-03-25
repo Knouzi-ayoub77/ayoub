@@ -1,34 +1,32 @@
-import finduserbymail from "../Models/database.js";
-// Recuperer Dom 
-const mailinput = document.getElementById("mail");
-const passinput = document.getElementById("password");
-const submitbtn = document.getElementById("submitbtn");
 
-submitbtn.addEventListener("click", function traitement(){
-    const mail = mailinput.value;
-    const password = passinput.value;
-    console.log("clicking");
-    submitbtn.textContent = "Loading...";
+import {finduserbymail} from "/src/Models/database.js";
 
-    if(mail == "" || password == ""){
+// recuperation des elements DOM
+const mailInput = document.getElementById("mail");
+const passwordInput  = document.getElementById("password");
+const submitBtn = document.getElementById("submitbtn");
+const display   = document.getElementById("display");
+// event listener sur le bouton Se connecter
+submitBtn.addEventListener("click", handleSubmit);
 
-        alert("please take time to fill the form");
-        submitbtn.textContent = "Se connecter";
+function handleSubmit() {
+    let mail = mailInput.value;
+    let password = passwordInput.value;
 
-    }else{
-        // champs sont remplies , donc on chercher l'utilisateur par les champs mail et password
+    if (!mail || password === "") {
+        alert("Bad credentials.");
+    } else {
+        submitBtn.textContent = "Checking!!!";
         const user = finduserbymail(mail, password);
 
-        if(user){
-            sessionStorage.setItem("Currentuser",JSON.stringify(user));
-            submitbtn.textContent = "Logging In...";
-            setTimeout(() => {
-                document.location.href="dashboard.html";
-            },1000);
-        }else{
-            alert("Bad credentials");
-            submitbtn.textContent = "Se connecter";
-        }   
+        setTimeout(() => {
+            if (user) {
+                sessionStorage.setItem("currentUser", JSON.stringify(user));
+                document.location = "dashboard.html";
+            } else {
+                alert("Bad credentials.");
+                submitBtn.textContent = "Se connecter";
+            }
+        }, 2000);
     }
-
-});
+}

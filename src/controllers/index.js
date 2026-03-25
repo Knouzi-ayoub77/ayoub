@@ -1,10 +1,12 @@
-// DOM recuperer 
-const but=document.getElementById("Loginbtn");
-but.addEventListener("click", function handler(){
-    console.log("clicking");
-    but.textContent = "Redirecting...";
+const loginBtn  = document.getElementById("Loginbtn");
+//const signinBtn = document.getElementById("Signinbtn");
+
+// bouton Login
+loginBtn.addEventListener("click", handleLogin);
+
+function handleLogin() {
+    loginBtn.textContent = "loading...";
     setTimeout(() => {
-        document.location.href="login.html";
-    },1000);
-    
-});
+        document.location = "login.html";
+    }, 2000);
+}
