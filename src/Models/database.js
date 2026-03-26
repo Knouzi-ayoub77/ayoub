@@ -51,18 +51,69 @@ const database = {
   ]
 };
 
-export  const finduserbymail = (mail, password) => {
-    return database.users.find((u) => u.email === mail && u.password === password);
+export const finduserbymail = (mail, password) => {
+  return database.users.find((u) => u.email === mail && u.password === password);
 }
 
-export  const getbeneficiaries = (id) => {
-    return database.users.find((u)=>u.id===id).wallet.beneficiaries;
+export const getbeneficiaries = (id) => {
+  return database.users.find((u) => u.id === id).wallet.beneficiaries;
 }
 
-export const findbeneficiarieByid= (id,beneficiaryId) => {
-    return database.users.find((u)=>u.id===id).wallet.beneficiaries.find((u)=>u.id===beneficiaryId);
+export const findbeneficiarieByid = (id, beneficiaryId) => {
+  return database.users.find((u) => u.id === id).wallet.beneficiaries.find((u) => u.id === beneficiaryId);
 }
 
-export const finduserbyaccount=(numcompte)=>{
-    return database.users.find((u)=>u.account===numcompte);
+export const finduserbyaccount = (numcompte) => {
+  return database.users.find((u) => u.account === numcompte);
+}
+
+export const updateUserData = (updatedUser) => {
+  const index = database.users.findIndex(u => u.id === updatedUser.id);
+  if (index !== -1) {
+    database.users[index] = updatedUser;
+    return true;
+  }
+  return false;
+}
+
+export function checkcard(cardNumber, userid) {
+  console.log(userid, cardNumber);  
+  debugger
+  const user = database.users.find((u) => u.id === userid);
+  console.log("User found:", user);
+  const cards=user.wallet.cards;
+  
+  const card = cards.find((c) => c.numcards === cardNumber);
+
+  if (!card) {
+    return false;
+  }
+
+  const diff = new Date(card.expiry) - new Date();
+
+  if (diff < 0) {
+    return false;
+  }
+
+  return true;
+
+
+}
+
+
+export function charger(userId, cardNumber, amount) {
+  console.log(userId, cardNumber, amount);
+
+  const cards = database.users.find((u) => u.id === userId).wallet.cards;
+
+  const card = cards.find((c) => c.numcards === cardNumber);
+
+
+  card.balance -= amount;
+  const user=database.users.find((u) => u.id === userId)
+  user.wallet.balance += amount;
+
+  
+
+
 }

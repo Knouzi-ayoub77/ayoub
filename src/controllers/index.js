@@ -1,3 +1,4 @@
+// recuperation des elements DOM
 const loginBtn  = document.getElementById("Loginbtn");
 //const signinBtn = document.getElementById("Signinbtn");
 
