@@ -6,7 +6,9 @@ import {
   checkcard,
   charger
 } from "../Models/database.js";
+
 const user = JSON.parse(sessionStorage.getItem("currentUser"));
+
 // DOM elements
 const greetingName = document.getElementById("greetingName");
 const currentDate = document.getElementById("currentDate");
@@ -27,10 +29,7 @@ const submitTransferBtn = document.getElementById("submitTransferBtn");
 const closeRechargeBtn = document.getElementById("closeRechargeBtn");
 const cancelRechargeBtn = document.getElementById("cancelRechargeBtn");
 const submitRechargeBtn = document.getElementById("submitRechargeBtn");
-
-
 const rechargeSourceCard = document.getElementById("sourceCard-recharge");
-
 
 // Guard
 if (!user) {
@@ -43,14 +42,10 @@ transferBtn.addEventListener("click", handleTransfersection);
 rechargeBtn.addEventListener("click", handleRechargesection);
 closeTransferBtn.addEventListener("click", closeTransfer);
 cancelTransferBtn.addEventListener("click", closeTransfer);
-submitTransferBtn.addEventListener("click", handleTransfer)
+submitTransferBtn.addEventListener("click", handleTransfer);
 closeRechargeBtn.addEventListener("click", closeRechargesection);
 cancelRechargeBtn.addEventListener("click", closeRechargesection);
 submitRechargeBtn.addEventListener("click", handleRecharge);
-
-
-
-
 
 // Retrieve dashboard data
 const getDashboardData = () => {
@@ -82,20 +77,21 @@ function renderDashboard() {
     expensesElement.textContent = dashboardData.monthlyExpenses;
     activecards.textContent = dashboardData.activeCards;
   }
+  
   // Display transactions
   transactionsList.innerHTML = "";
   user.wallet.transactions.forEach(transaction => {
     const transactionItem = document.createElement("div");
     transactionItem.className = "transaction-item";
     transactionItem.innerHTML = `
-    <div>${transaction.date}</div>
-    <div>${transaction.amount} MAD</div>
-    <div>${transaction.type}</div>
-  `;
+      <div>${transaction.date}</div>
+      <div>${transaction.amount} MAD</div>
+      <div>${transaction.type}</div>
+    `;
     transactionsList.appendChild(transactionItem);
   });
-
 }
+
 renderDashboard();
 
 // Transfer popup
@@ -131,23 +127,23 @@ function renderBeneficiaries() {
   });
 }
 renderBeneficiaries();
+
 function renderCards() {
   user.wallet.cards.forEach((card) => {
     const option = document.createElement("option");
     option.value = card.numcards;
     option.textContent = card.type + "****" + card.numcards;
-
     sourceCard.appendChild(option);
-    rechargeSourceCard.appendChild(option);
+    rechargeSourceCard.appendChild(option.cloneNode(true));
   });
 }
-
 renderCards();
 
+// ============= VERSIONS ASYNC/AWAIT DES FONCTIONS =============
 
-function checkUser(numcompte) {
-  return new Promise((resolve, reject) => {
-    console.log("Checking beneficiary account:", numcompte);
+async function checkUser(numcompte) {
+  console.log("Checking beneficiary account:", numcompte);
+  const destinataire = await new Promise((resolve, reject) => {
     setTimeout(() => {
       const destinataire = finduserbyaccount(numcompte);
       if (destinataire) {
@@ -157,11 +153,12 @@ function checkUser(numcompte) {
       }
     }, 2000);
   });
+  return destinataire;
 }
 
-function checkSolde(expediteur, amount) {
-  return new Promise((resolve, reject) => {
-    console.log("Checking balance for amount:", amount);
+async function checkSolde(expediteur, amount) {
+  console.log("Checking balance for amount:", amount);
+  const result = await new Promise((resolve, reject) => {
     setTimeout(() => {
       if (expediteur.wallet.balance >= amount) {
         resolve("Sufficient balance");
@@ -170,22 +167,24 @@ function checkSolde(expediteur, amount) {
       }
     }, 3000);
   });
+  return result;
 }
 
-function updateSolde(expediteur, destinataire, amount) {
-  return new Promise((resolve) => {
-    console.log("Updating balance...");
+async function updateSolde(expediteur, destinataire, amount) {
+  console.log("Updating balance...");
+  const result = await new Promise((resolve) => {
     setTimeout(() => {
       expediteur.wallet.balance -= amount;
       destinataire.wallet.balance += amount;
       resolve("update balance done");
     }, 200);
   });
+  return result;
 }
 
-function addtransactions(expediteur, destinataire, amount) {
-  return new Promise((resolve) => {
-    console.log("Adding transactions...");
+async function addtransactions(expediteur, destinataire, amount) {
+  console.log("Adding transactions...");
+  const result = await new Promise((resolve) => {
     setTimeout(() => {
       // create credit transaction
       const credit = {
@@ -195,7 +194,7 @@ function addtransactions(expediteur, destinataire, amount) {
         date: new Date().toLocaleString(),
         from: expediteur.name,
       };
-      //create debit transaction
+      // create debit transaction
       const debit = {
         id: Date.now(),
         type: "debit",
@@ -213,45 +212,12 @@ function addtransactions(expediteur, destinataire, amount) {
       resolve("transaction added successfully");
     }, 3000);
   });
+  return result;
 }
 
-// **************************************transfer***************************************************//
-
-function transfer(expediteur, numcompte, amount) {
-  checkUser(numcompte) //p0
-    .then((destinataire) => {//p1
-      return checkSolde(expediteur, amount)//p2
-        .then(() =>//p3
-          destinataire
-        );
-    })
-    .then((destinataire) => {
-
-      return updateSolde(expediteur, destinataire, amount).then(
-        () => (destinataire)
-      );
-    })
-    .then((destinataire) => {
-      return addtransactions(expediteur, destinataire, amount).then(
-        () => {
-          alert(`Transfert de ${amount} réussi!`);
-          renderDashboard();
-          closeTransfer();
-        }
-      );
-
-    })
-    .catch((error) => {
-      console.log(error);
-      alert(error);
-    });
-}
-
-
-function checkCardValidty(cardNumber) {
-
-  return new Promise((resolve, reject) => {
-    console.log("Checking card validity for card number:", cardNumber);
+async function checkCardValidity(cardNumber) {
+  console.log("Checking card validity for card number:", cardNumber);
+  const result = await new Promise((resolve, reject) => {
     setTimeout(() => {
       const isValid = checkcard(cardNumber, user.id);
       if (isValid) {
@@ -261,33 +227,19 @@ function checkCardValidty(cardNumber) {
       }
     }, 2000);
   });
-
+  return result;
 }
 
-function chargerCard(cardNumber,amount) {
-  return new Promise((resolve, reject) => {
-
-    const cards = user.wallet.cards;
-
-    const card = cards.find((c) => c.numcards === cardNumber);
-
-
-    card.balance -= amount;
-    // const user = database.users.find((u) => u.id === userId)
-    user.wallet.balance += amount;
-
-
-
-
-
+async function chargerCard(cardNumber, amount) {
+  console.log("Charging card...");
+  const cards = user.wallet.cards;
+  const card = cards.find((c) => c.numcards === cardNumber);
+  card.balance -= amount;
+  user.wallet.balance += amount;
+  
+  const result = await new Promise((resolve, reject) => {
     setTimeout(() => {
-
-
-
-
-
-      const done=updateUserData(user);
-
+      const done = updateUserData(user);
       if (done) {
         resolve("Card charged successfully");
       } else {
@@ -295,64 +247,84 @@ function chargerCard(cardNumber,amount) {
       }
     }, 2000);
   });
-
+  return result;
 }
 
-function handleRecharge(e) {
-  e.preventDefault();
+// ============= VERSION ASYNC/AWAIT DU TRANSFERT =============
 
-  const cardNumber = rechargeSourceCard.value;
-  console.log("amoutnnt:", document.getElementById("amountrecharge"));
-  const amount = Number(document.getElementById("amountrecharge").value);
-
-  if (amount < 10 || amount > 5000) {
-    alert("Please enter a valid amount");
-    return;
+async function transfer(expediteur, numcompte, amount) {
+  console.log("DÉBUT DU TRANSFERT...");
+  try {
+    const destinataire = await checkUser(numcompte);
+    console.log("Étape 1: Destinataire trouvé -", destinataire.name);
+    
+    await checkSolde(expediteur, amount);
+    console.log("Étape 2: Solde suffisant");
+    
+    await updateSolde(expediteur, destinataire, amount);
+    console.log("Étape 3: Soldes mis à jour");
+    
+    await addtransactions(expediteur, destinataire, amount);
+    console.log("Étape 4: Transactions ajoutées");
+    
+    console.log(`Transfert de ${amount} MAD réussi!`);
+    renderDashboard();
+    sessionStorage.setItem("currentUser", JSON.stringify(expediteur));
+    alert(`Transfert de ${amount} MAD effectué avec succès !`);
+    closeTransfer();
+  } catch (erreur) {
+    console.error("Échec du transfert :", erreur);
+    alert(`Erreur : ${erreur}`);
   }
-
-  checkCardValidty(cardNumber).
-    then(() => chargerCard(cardNumber, amount)).
-    then(() => renderDashboard()).
-    then(() => closeRechargesection()).
-    catch((error) => {
-      console.log(error);
-      alert(error);
-    });
-
-
-  console.log("Recharge amount:", amount);
-  console.log("Selected card:", cardNumber);
 }
 
+// ============= VERSION ASYNC/AWAIT DE LA RECHARGE =============
+
+async function recharge(amount, cardNumber) {
+  console.log("DÉBUT DE LA RECHARGE...");
+  try {
+    await checkCardValidity(cardNumber);
+    console.log("Étape 1: Carte valide -", cardNumber);
+    
+    await chargerCard(cardNumber, amount);
+    console.log("Étape 2: Carte chargée avec succès");
+    
+    console.log(`Recharge de ${amount} MAD réussie!`);
+    renderDashboard();
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+    alert(`Recharge de ${amount} MAD effectuée avec succès !`);
+    closeRechargesection();
+  } catch (erreur) {
+    console.error("Échec de la recharge :", erreur);
+    alert(`Erreur : ${erreur}`);
+  }
+}
+
+// ============= GESTIONNAIRES D'ÉVÉNEMENTS MIS À JOUR =============
 
 function handleTransfer(e) {
   e.preventDefault();
   const beneficiaryId = document.getElementById("beneficiary").value;
   const beneficiaryAccount = findbeneficiarieByid(user.id, beneficiaryId).account;
-  const sourceCard = document.getElementById("sourceCard").value;
-
   const amount = Number(document.getElementById("amount").value);
-
+  
+  if (amount <= 0) {
+    alert("Veuillez entrer un montant valide");
+    return;
+  }
+  
   transfer(user, beneficiaryAccount, amount);
-
 }
 
-/*
-    function func1(number,callback){
-        console.log("start function");
-       if(number%2===0){
-        console.log("start callback");
-        callback(number);
-        console.log("end callback");
-       }else{
-        
-       }
-       console.log("end function");
-    }
-
-    function produit(number){
-        console.log("the result is : ", (number*number));
-    }
-
-    func1(4,produit);
-    */
+function handleRecharge(e) {
+  e.preventDefault();
+  const cardNumber = rechargeSourceCard.value;
+  const amount = Number(document.getElementById("amountrecharge").value);
+  
+  if (amount < 10 || amount > 5000) {
+    alert("Veuillez entrer un montant valide (entre 10 et 5000 MAD)");
+    return;
+  }
+  
+  recharge(amount, cardNumber);
+}
